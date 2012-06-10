@@ -21,6 +21,7 @@
 	
 	<div id="imgLoad">
 		<img src="/img/grass.png" alt="" id="grass"/>
+		<img src="/img/house1.png" alt="" id="house1"/>
 	</div>
 </body>
 </html>

@@ -94,14 +94,18 @@ var Item = {
 	
 	draw: function(x,y,w){
 		var pt1 = Field.top+Param.vectorRight*x+Param.vectorDown*y;
-		var house = new Path(pt1, pt1+Param.vectorRight*w, pt1+Param.vectorRight*w+Param.vectorDown*w, pt1+Param.vectorDown*w);
-		house.closed = true;
-		house.style = {
+		var item = new Path(pt1, pt1+Param.vectorRight*w, pt1+Param.vectorRight*w+Param.vectorDown*w, pt1+Param.vectorDown*w);
+		item.closed = true;
+		item.style = {
 			strokeColor: '#000',
 			fillColor: '#008080',
 			strokeWidth: 0.2
 		};
-		this.group.addChild(house);
+		
+		
+		
+		
+		this.group.addChild(item);
 
 		this.place(x,y,w,true);
 	},
@@ -165,6 +169,11 @@ Item.draw(0,0,4);
 Item.draw(10,5,4);
 Item.draw(4,20,7);
 Item.draw(30,12,2);
+
+
+var raster = new Raster('house1');
+console.log(raster);
+
 
 var hitOptions = {
 	stroke: true,
