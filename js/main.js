@@ -102,8 +102,11 @@ var Item = {
 			strokeWidth: 0.2
 		};
 		
-		
-		
+		var raster = new Raster('house1');
+		raster.scale(0.5);
+		//raster.center = new Point(500, 500);
+		raster.position = Field.top;
+		//console.log(raster.position);
 		
 		this.group.addChild(item);
 
@@ -169,10 +172,6 @@ Item.draw(0,0,4);
 Item.draw(10,5,4);
 Item.draw(4,20,7);
 Item.draw(30,12,2);
-
-
-var raster = new Raster('house1');
-console.log(raster);
 
 
 var hitOptions = {
