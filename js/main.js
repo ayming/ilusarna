@@ -85,6 +85,8 @@ Field.init();
 
 var Item = {
 	group: new Group(),
+	img: new Array(),
+	imgs: new Group(),
 	errors: new Group(),
 	gotError: null,
 	placed: new Array(),
@@ -92,7 +94,7 @@ var Item = {
 	selected: null,
 	isSelected: null,
 	
-	draw: function(x,y,w){
+	draw: function(x,y,w,img){
 		var pt1 = Field.top+Param.vectorRight*x+Param.vectorDown*y;
 		var item = new Path(pt1, pt1+Param.vectorRight*w, pt1+Param.vectorRight*w+Param.vectorDown*w, pt1+Param.vectorDown*w);
 		item.closed = true;
@@ -102,13 +104,15 @@ var Item = {
 			strokeWidth: 0.2
 		};
 		
-		var raster = new Raster('house1');
-		raster.scale(0.5);
-		//raster.center = new Point(500, 500);
-		raster.position = Field.top;
-		//console.log(raster.position);
 		
+		var img = new Raster(img);
+		img.scale(0.5);
+		img.position = pt1;
+		img.position.y += item.bounds.bottom - img.bounds.bottom;
+		this.img[item.id] = img;
+
 		this.group.addChild(item);
+		this.imgs.addChild(this.img[item.id]);
 
 		this.place(x,y,w,true);
 	},
@@ -124,6 +128,8 @@ var Item = {
 	move: function(item, to) {
 		item.item.position = Field.top + (Param.vectorRight*to[0]) + (Param.vectorDown*to[1]) + (Param.vectorRight*(to[2]/2) + Param.vectorDown*(to[2]/2));
 		this.errors.removeChildren();
+		this.img[item.item.id].position = item.item.position;
+		this.img[item.item.id].position.y += item.item.bounds.bottom - this.img[item.item.id].bounds.bottom;
 		this.gotError = false;
 		this.unselect();
 	},
@@ -156,6 +162,7 @@ var Item = {
 		if (this.selected && !this.gotError) {
 			var infos = this.info(this.selected.item);
 			this.place(infos[0],infos[1],infos[2],true);
+			this.img[this.selected.item.id].opacity = 1;
 			
 			this.selected.item.fillColor = '#008080';
 			Item.selected = false;
@@ -168,10 +175,11 @@ var Item = {
 	
 };
 
-Item.draw(0,0,4);
-Item.draw(10,5,4);
-Item.draw(4,20,7);
-Item.draw(30,12,2);
+Item.draw(0,0,3,'house3');
+Item.draw(10,5,4,'house4');
+Item.draw(4,20,6,'house6');
+Item.draw(30,12,2,'house2');
+project.activeLayer.appendTop(Item.errors);
 
 
 var hitOptions = {
@@ -187,13 +195,14 @@ function onMouseDown(event) {
 	var hitResultTmp = Item.group.hitTest(event.point, hitOptions);
 	if (!hitResultTmp) { Item.unselect(); return; }
 	if (!Item.isSelected) {
-		//Item.selected = hitResultTmp;
 		Item.origine = Item.info(hitResultTmp.item);
 		Item.place(Item.origine[0],Item.origine[1],Item.origine[2],false);
 	}
 	
 	if (!Item.isSelected || hitResultTmp.item.id == Item.selected.item.id) {
 		Item.selected = hitResultTmp;
+		Item.img[Item.selected.item.id].opacity = 0.6;
+		Item.imgs.appendTop(Item.img[Item.selected.item.id]);
 	} else if (Item.selected) {
 		Item.unselect();
 	}
@@ -228,18 +237,21 @@ function onMouseDrag(event) {
 		// Move
 		if ((spareMoveY != 0 || spareMoveX != 0) && (Math.abs(spareMoveX + spareMoveY)%2) != 1) {
 			var diff = (spareMoveX - spareMoveY) / 2;
-			Item.selected.item.position += (Param.vectorRight * (spareMoveY + diff)) - (Param.vectorDown * diff);
-
+			var item = Item.selected.item;
+			var pos = (Param.vectorRight * (spareMoveY + diff)) - (Param.vectorDown * diff);
+			item.position += pos;
+			Item.img[item.id].position += pos;
+			
 			spareMoveY = spareMoveX = 0;
 			Item.gotError = false;
 			
 			// Check if correct under
-			var infos = Item.info(Item.selected.item);
+			var infos = Item.info(item);
 			Item.errors.removeChildren();
 			for (var y=infos[1]; y<infos[2]+infos[1]; y++) {
 				for (var x=infos[0]; x<infos[2]+infos[0]; x++) {
 					if (Item.placed[x+'-'+y] || x<0 || y<0 || x>=Field.width || y>=Field.width) {
-						Item.error(x,y,Item.selected.item.index);
+						Item.error(x,y,item.index);
 						Item.gotError = true;
 					}
 				}
