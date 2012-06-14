@@ -93,6 +93,7 @@ var Item = {
 	origine: null,
 	selected: null,
 	isSelected: null,
+	selectedImg: null,
 	
 	draw: function(x,y,w,img){
 		var pt1 = Field.top+Param.vectorRight*x+Param.vectorDown*y;
@@ -140,7 +141,7 @@ var Item = {
 		err.closed = true;
 		err.style = {
 			strokeColor: '#111',
-			fillColor: '#A52A2A',
+			fillColor: '#ff0000',
 			strokeWidth: 0.1
 		};
 		this.errors.addChild(err);
@@ -163,14 +164,35 @@ var Item = {
 			var infos = this.info(this.selected.item);
 			this.place(infos[0],infos[1],infos[2],true);
 			this.img[this.selected.item.id].opacity = 1;
+			if (Item.selectedImg) Item.selectedImg.remove();
 			
-			this.selected.item.fillColor = '#008080';
+			this.selected.item.fillColor = '#0000ff';
 			Item.selected = false;
 			Item.isSelected = false;
 			pxLeftX = pxLeftY = 0;
+			this.setIndex();
 		} else if (this.selected) {
+			if (Item.selectedImg) Item.selectedImg.remove();
 			this.move(this.selected, this.origine);
+			this.setIndex();
 		}
+	},
+	
+	setIndex: function(){
+		var sort = new Array();
+		var save = new Array();
+		for(var i in this.img){
+			var getPos = this.getPositionWithPx(this.img[i].position.x,this.img[i].position.y);
+			sort[i] = Math.round(getPos[0]+getPos[1]);
+			save[sort[i]] = this.img[i];
+		}
+		
+		sort.sort(function(a,b){ return a - b; });
+		
+		for(var i in sort){
+			this.imgs.appendTop(save[sort[i]]);
+		}
+		
 	}
 	
 };
@@ -201,8 +223,6 @@ function onMouseDown(event) {
 	
 	if (!Item.isSelected || hitResultTmp.item.id == Item.selected.item.id) {
 		Item.selected = hitResultTmp;
-		Item.img[Item.selected.item.id].opacity = 0.6;
-		Item.imgs.appendTop(Item.img[Item.selected.item.id]);
 	} else if (Item.selected) {
 		Item.unselect();
 	}
@@ -214,6 +234,10 @@ function onMouseUp(event) {
 	if (Item.group.hitTest(event.point, hitOptions) && Item.selected && Item.group.hitTest(event.point, hitOptions).item == Item.selected.item) {
 		Item.group.addChild(Item.selected.item);
 		Item.selected.item.fillColor = new RgbColor(0.8, 0.8, 1, 0.6);
+		if (Item.selectedImg) Item.selectedImg.remove();
+		Item.img[Item.selected.item.id].opacity = 0;
+		Item.selectedImg = Item.img[Item.selected.item.id].clone();
+		Item.selectedImg.opacity = 0.5;
 		
 		Item.isSelected = true;
 	}
@@ -241,6 +265,7 @@ function onMouseDrag(event) {
 			var pos = (Param.vectorRight * (spareMoveY + diff)) - (Param.vectorDown * diff);
 			item.position += pos;
 			Item.img[item.id].position += pos;
+			Item.selectedImg.position += pos;
 			
 			spareMoveY = spareMoveX = 0;
 			Item.gotError = false;
