@@ -310,9 +310,6 @@ function onKeyUp(event) {
 
 window.addEventListener('mousewheel', function(e){ Field.zoom(e.wheelDeltaY<0?-1:1); }, false);
 
-alert(123);
-
-
 
 
 
